@@ -961,7 +961,9 @@
     <table id="245" parent="9" name="rates">
       <Collation>utf8_general_ci</Collation>
     </table>
-    <table id="246" parent="9" name="seasons"/>
+    <table id="246" parent="9" name="seasons">
+      <Collation>utf8_general_ci</Collation>
+    </table>
     <table id="247" parent="9" name="sprays">
       <Collation>utf8_general_ci</Collation>
     </table>

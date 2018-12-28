@@ -533,6 +533,22 @@ public class DatabaseConnection {
         return resultSet;
     }
 
+    public static ResultSet getCustomersByVillageName(String string) {
+        string = "%" + string + "%";
+        String strQuery = "SELECT * FROM customers WHERE customers.cust_village LIKE ?";
+        ResultSet resultSet = null;
+
+        try {
+            PreparedStatement preparedStatement = con.prepareStatement(strQuery);
+            preparedStatement.setString(1, string);
+            resultSet = preparedStatement.executeQuery();
+        } catch (Exception var4) {
+            var4.printStackTrace();
+        }
+
+        return resultSet;
+    }
+
     public static ResultSet getCustomersByNameSingle(String string) {
         String strQuery = "SELECT * FROM customers WHERE cust_name = ?";
         ResultSet resultSet = null;
@@ -645,7 +661,7 @@ public class DatabaseConnection {
     }
 
     public static ResultSet getDriverByNameSingle(String string) {
-        String strQuery = "SELECT * FROM drivers WHERE driver_name = ?";
+        String strQuery = "SELECT * FROM drivers WHERE lower(driver_name) = lower(?)";
         ResultSet resultSet = null;
 
         try {
@@ -829,21 +845,28 @@ public class DatabaseConnection {
         return resultSet;
     }
 
-    public static ResultSet getFilteredSprays(String filterBy, String query) {
+    public static ResultSet getFilteredSprays(String filterBy, String query) throws SQLException {
         ResultSet resultSet = null;
-
+        ResultSet seasonResultSet = getActiveSeason();
+        String start_date = "", end_date = "";
+        if(seasonResultSet.next()){
+            start_date = seasonResultSet.getString("start_date");
+            end_date = seasonResultSet.getString("end_date");
+        }
         try {
-            String strGetUser = "SELECT * FROM sprays WHERE " + filterBy + " = '" + query + "'";
+            String strGetUser = "SELECT * FROM sprays WHERE " + filterBy + " = '" + query + "' AND date BETWEEN '"+ start_date +"' AND '"+ end_date +"'";
             ResultSet driver;
             if (filterBy.equals("customer")) {
                 driver = getCustomersByNameSingle(query);
                 if (driver.next()) {
-                    strGetUser = "SELECT * FROM sprays WHERE " + filterBy + "_id = " + driver.getInt("customer_id") + "";
+                    strGetUser = "SELECT * FROM sprays WHERE " + filterBy + "_id = " + driver.getInt("customer_id") + " AND date BETWEEN '"+ start_date +"' AND '"+ end_date +"'";
                 }
-            } else if (filterBy.equals("driver")) {
+            }
+            if (filterBy.equals("driver")) {
+                System.out.println("Searching Driver");
                 driver = getDriverByNameSingle(query);
                 if (driver.next()) {
-                    strGetUser = "SELECT * FROM sprays WHERE " + filterBy + "_id = " + driver.getInt("driver_id") + "";
+                    strGetUser = "SELECT * FROM sprays WHERE " + filterBy + "_id = " + driver.getInt("driver_id") + " AND date BETWEEN '"+ start_date +"' AND '"+ end_date +"'";
                 }
             }
 

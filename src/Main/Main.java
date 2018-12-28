@@ -7,6 +7,7 @@ package Main;
 
 import DBUtil.DatabaseConnection;
 import Drivers.Drivers;
+import MasterData.BackupData;
 import MasterData.Rates;
 import MasterData.Season;
 import MasterData.Villages;
@@ -145,6 +146,9 @@ public class Main extends JFrame {
         JMenuItem itemRates = new JMenuItem("Rates");
         itemRates.setFont(frameTextFont);
         itemRates.setPreferredSize(new Dimension(200, itemExit.getPreferredSize().height + 10));
+        JMenuItem itemBackupData = new JMenuItem("Backup");
+        itemBackupData.setFont(frameTextFont);
+        itemBackupData.setPreferredSize(new Dimension(200, itemExit.getPreferredSize().height + 10));
         JMenuItem itemCustomers = new JMenuItem("Customers Actions");
         itemCustomers.setFont(frameTextFont);
         itemCustomers.setPreferredSize(new Dimension(200, itemExit.getPreferredSize().height + 10));
@@ -166,6 +170,7 @@ public class Main extends JFrame {
         menuMasterData.add(itemVillages);
         menuMasterData.add(itemSeasons);
         menuMasterData.add(itemRates);
+        menuMasterData.add(itemBackupData);
         itemLogout.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ResultSet currentUser = Main.dbConnectionObject.getCurrentUser();
@@ -311,6 +316,27 @@ public class Main extends JFrame {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         Main.internalFrame = new Season();
+                        Main.internalFrame.setSize(Main.desktopPane.getWidth() / 2, Main.desktopPane.getHeight() / 2);
+                        Dimension desktopSize = Main.desktopPane.getSize();
+                        Dimension jInternalFrameSize = Main.internalFrame.getSize();
+                        int width = (desktopSize.width - jInternalFrameSize.width) / 2;
+                        int height = (desktopSize.height - jInternalFrameSize.height) / 2;
+                        Main.internalFrame.setLocation(width, height);
+                        Main.internalFrame.setVisible(true);
+                        Main.desktopPane.add(Main.internalFrame);
+                    }
+                });
+            }
+        });
+        itemBackupData.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (Main.internalFrame != null) {
+                    Main.internalFrame.dispose();
+                }
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        Main.internalFrame = new BackupData();
                         Main.internalFrame.setSize(Main.desktopPane.getWidth() / 2, Main.desktopPane.getHeight() / 2);
                         Dimension desktopSize = Main.desktopPane.getSize();
                         Dimension jInternalFrameSize = Main.internalFrame.getSize();

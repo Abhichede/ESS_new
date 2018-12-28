@@ -21,6 +21,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.beans.PropertyChangeEvent;
@@ -231,9 +232,10 @@ public class Sprays extends JInternalFrame {
         });
         this.filterButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (!Sprays.this.comboFilterQuery.getItemAt(Sprays.this.comboFilterQuery.getSelectedIndex()).toString().equals("")) {
-                    String filterBy = Sprays.this.comboFilterBy.getItemAt(Sprays.this.comboFilterBy.getSelectedIndex()).toString();
-                    String filterQuery = Sprays.this.comboFilterQuery.getItemAt(Sprays.this.comboFilterQuery.getSelectedIndex()).toString();
+                if (!txtSearchVillage.getText().toString().equals("")) {
+                    System.out.println("Searched by: "+ comboFilterBy.getItemAt(comboFilterBy.getSelectedIndex()).toString());
+                    String filterBy = comboFilterBy.getItemAt(comboFilterBy.getSelectedIndex()).toString();
+                    String filterQuery = txtSearchVillage.getText();
                     Sprays.this.fillTable(filterBy, filterQuery);
                 } else {
                     JOptionPane.showInternalMessageDialog(Sprays.this.getContentPane(), "Please search something", "Warning", 2);
@@ -246,11 +248,11 @@ public class Sprays extends JInternalFrame {
                 int currentRow = 0;
                 if (!Sprays.this.tableSprays.getSelectionModel().isSelectionEmpty()) {
                     int currentRowx = Sprays.this.tableSprays.getSelectedRow();
-                    if (String.valueOf(Sprays.this.tableSprays.getValueAt(currentRowx, 4)).equals("")) {
+                    if (String.valueOf(Sprays.this.tableSprays.getValueAt(currentRowx, 5)).equals("")) {
                         JOptionPane.showInternalMessageDialog(Sprays.this.getContentPane(), "This cant be blank...", "Error", 0);
                     } else {
-                        Double rate = Double.parseDouble(String.valueOf(Sprays.this.tableSprays.getValueAt(currentRowx, 5)));
-                        Double acres = Double.parseDouble(String.valueOf(Sprays.this.tableSprays.getValueAt(currentRowx, 4)));
+                        Double rate = Double.parseDouble(String.valueOf(Sprays.this.tableSprays.getValueAt(currentRowx, 6)));
+                        Double acres = Double.parseDouble(String.valueOf(Sprays.this.tableSprays.getValueAt(currentRowx, 5)));
                         Sprays.this.tableSprays.setValueAt(rate * acres, currentRowx, 6);
                     }
                 }
@@ -267,9 +269,9 @@ public class Sprays extends JInternalFrame {
                         ResultSet driverResultSet = DatabaseConnection.getDriverByNameSingle(Sprays.this.defaultTableModel.getValueAt(rowIndex, 2).toString());
                         int custID = customerResultSet.next() ? customerResultSet.getInt("customer_id") : 0;
                         int driverID = driverResultSet.next() ? driverResultSet.getInt("driver_id") : 0;
-                        String acres = Sprays.this.defaultTableModel.getValueAt(rowIndex, 4).toString();
-                        String amount = Sprays.this.defaultTableModel.getValueAt(rowIndex, 6).toString();
-                        String date = Sprays.this.defaultTableModel.getValueAt(rowIndex, 7).toString();
+                        String acres = Sprays.this.defaultTableModel.getValueAt(rowIndex, 5).toString();
+                        String amount = Sprays.this.defaultTableModel.getValueAt(rowIndex, 7).toString();
+                        String date = Sprays.this.defaultTableModel.getValueAt(rowIndex, 1).toString();
                         if (custID != 0 && driverID != 0) {
                             int result = DatabaseConnection.updateSpray(sprayID, custID, driverID, acres, amount, date);
                             if (result != 0) {
@@ -315,18 +317,21 @@ public class Sprays extends JInternalFrame {
         });
         this.printButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                SprayPrintJob sprayPrintJob = new SprayPrintJob(Sprays.this.tableSprays);
-                Printsupport ps = new Printsupport();
-                PrinterJob pj = PrinterJob.getPrinterJob();
-                pj.setPrintable(sprayPrintJob, ps.getPageFormat(pj, 21.0D, 29.7D, 0));
+                if (Sprays.this.comboFilterQuery.getItemCount() > 0) {
+                    SprayPrintJob sprayPrintJob = new SprayPrintJob(Sprays.this.comboFilterBy.getItemAt(Sprays.this.comboFilterBy.getSelectedIndex()).toString(), txtSearchVillage.getText());
+                    Printsupport ps = new Printsupport();
+                    PrinterJob pj = PrinterJob.getPrinterJob();
+                    pj.setPrintable(sprayPrintJob, ps.getPageFormat(pj, 21.0D, 29.7D, 1));
 
-                try {
-                    pj.print();
-                } catch (PrinterException var6) {
-                    var6.printStackTrace();
-                    JOptionPane.showInternalMessageDialog(Sprays.this.getContentPane(), var6, "Error", 0);
+                    try {
+                        pj.print();
+                    } catch (PrinterException var6) {
+                        var6.printStackTrace();
+                        JOptionPane.showInternalMessageDialog(Sprays.this.getContentPane(), var6, "Error", 0);
+                    }
+                } else {
+                    JOptionPane.showInternalMessageDialog(Sprays.this.getContentPane(), "Please enter village / customer name in search box!!!", "ERROR", 0);
                 }
-
             }
         });
     }
@@ -437,7 +442,7 @@ public class Sprays extends JInternalFrame {
         this.txtDate = new JDatePickerImpl(this.toDatePanel, new DateLabelFormatter());
         this.tableSprays = new JTable() {
             public boolean isCellEditable(int row, int column) {
-                return column == 4 || column == 7;
+                return column == 5 || column == 1;
             }
         };
     }
